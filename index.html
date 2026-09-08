@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Age Calculator — Your Birthday Story</title>
+  <meta name="description" content="Find out exactly how old you are, what day you were born, your zodiac sign, and how long until your next birthday.">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2052705064706779"
+     crossorigin="anonymous"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      padding: 40px 20px;
+      color: #333;
+    }
+    .container { max-width: 600px; margin: 0 auto; }
+    h1 { font-size: 1.8rem; margin-bottom: 6px; }
+    .subtitle { color: #777; font-size: 0.9rem; margin-bottom: 30px; }
+
+    .card {
+      background: white;
+      border-radius: 10px;
+      padding: 24px;
+      margin-bottom: 20px;
+      border: 1px solid #e0e0e0;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    label { font-size: 0.9rem; color: #555; }
+
+    input[type="date"] {
+      padding: 10px 14px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 1rem;
+      flex: 1;
+    }
+    input[type="date"]:focus {
+      outline: none;
+      border-color: #4CAF50;
+    }
+
+    button {
+      padding: 10px 24px;
+      background: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button:hover { background: #45a049; }
+
+    /* Results */
+    #results { display: none; }
+
+    .result-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .stat-box {
+      background: #f9f9f9;
+      border-radius: 8px;
+      padding: 16px;
+      text-align: center;
+      border: 1px solid #eee;
+    }
+    .stat-number {
+      font-size: 1.8rem;
+      font-weight: bold;
+      color: #4CAF50;
+    }
+    .stat-label {
+      font-size: 0.8rem;
+      color: #888;
+      margin-top: 4px;
+    }
+
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid #f0f0f0;
+      font-size: 0.95rem;
+    }
+    .info-row:last-child { border-bottom: none; }
+    .info-label { color: #888; }
+    .info-value { font-weight: bold; color: #333; }
+
+    .wish-box {
+      background: #f0f7f0;
+      border-left: 3px solid #4CAF50;
+      border-radius: 0 8px 8px 0;
+      padding: 16px 20px;
+      font-size: 0.95rem;
+      color: #555;
+      line-height: 1.7;
+    }
+
+    .birthday-box {
+      background: #fff8e1;
+      border-left: 3px solid #FFD700;
+      border-radius: 0 8px 8px 0;
+      padding: 16px 20px;
+      font-size: 1.1rem;
+      color: #555;
+      line-height: 1.7;
+      text-align: center;
+    }
+
+    .error-box {
+      background: #fff0f0;
+      border-left: 3px solid #e74c3c;
+      border-radius: 0 8px 8px 0;
+      padding: 16px 20px;
+      color: #e74c3c;
+      font-size: 0.9rem;
+    }
+
+    footer {
+      margin-top: 40px;
+      text-align: center;
+      font-size: 0.8rem;
+      color: #aaa;
+      border-top: 1px solid #eee;
+      padding-top: 20px;
+    }
+    footer a { color: #aaa; margin: 0 8px; }
+
+    @media (max-width: 500px) {
+      .result-grid { grid-template-columns: 1fr; }
+      .input-row { flex-direction: column; align-items: stretch; }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>🎂 Age Calculator</h1>
+  <p class="subtitle">Your birthday story — more than just a number.</p>
+
+  <div class="card">
+    <div class="input-row">
+      <label for="dob_date">Date of birth:</label>
+      <input type="date" id="dob_date" name="birthday">
+      <button onclick="startCalculation()">Calculate</button>
+    </div>
+  </div>
+
+  <div id="error" style="display:none; margin-bottom:16px;"></div>
+
+  <div id="results">
+
+    <!-- Age Stats -->
+    <div class="card">
+      <div class="result-grid">
+        <div class="stat-box">
+          <div class="stat-number" id="out_years">—</div>
+          <div class="stat-label">Years</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-number" id="out_months">—</div>
+          <div class="stat-label">Months</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-number" id="out_days">—</div>
+          <div class="stat-label">Days</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-number" id="out_total_days">—</div>
+          <div class="stat-label">Total Days Alive</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Info -->
+    <div class="card">
+      <div class="info-row">
+        <span class="info-label">Born on</span>
+        <span class="info-value" id="out_day_of_week">—</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Next birthday in</span>
+        <span class="info-value" id="out_time_until">—</span>
+      </div>
+    </div>
+
+    <!-- Personal message -->
+    <div class="card">
+      <div class="wish-box" id="out_personal_msg"></div>
+    </div>
+
+    <!-- Birthday wish (only shown if today) -->
+    <div id="birthday_card" style="display:none;">
+      <div class="card">
+        <div class="birthday-box" id="out_wish"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- More tools -->
+  <div style="max-width:600px; margin:40px auto 0;
+              padding-top:30px; border-top:1px solid #eee;">
+    <p style="font-size:0.85rem; color:#888; margin-bottom:14px;">
+      More free tools:
+    </p>
+    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+      <a href="https://darthadas.github.io/word-counter/"
+         style="padding:8px 16px; background:#f0f0f0; border-radius:20px;
+                font-size:0.85rem; color:#333; text-decoration:none;">
+        📝 Word Counter
+      </a>
+      <a href="https://darthadas.github.io/password-checker/"
+         style="padding:8px 16px; background:#f0f0f0; border-radius:20px;
+                font-size:0.85rem; color:#333; text-decoration:none;">
+        🔐 Password Checker
+      </a>
+      <a href="https://darthadas.github.io/invoice-generator/"
+         style="padding:8px 16px; background:#f0f0f0; border-radius:20px;
+                font-size:0.85rem; color:#333; text-decoration:none;">
+        🧾 Invoice Generator
+      </a>
+      <a href="https://darthadas.github.io/unit-converter/"
+         style="padding:8px 16px; background:#f0f0f0; border-radius:20px;
+                font-size:0.85rem; color:#333; text-decoration:none;">
+        📐 Unit Converter
+      </a>
+    </div>
+  </div>
+
+  <footer>
+    <a href="https://darthadas.github.io">Adas</a>
+    <a href="https://darthadas.github.io/privacy.html">Privacy Policy</a>
+  </footer>
+</div>
+
+<script>
+  function startCalculation() {
+    const dateOfBirthString = document.getElementById("dob_date").value;
+
+    // Validate input
+    if (!dateOfBirthString) {
+      showError("Please select a date of birth.");
+      return;
+    }
+
+    const age = calculateAge(dateOfBirthString);
+    if (age === null) {
+      showError("Date of birth can't be in the future.");
+      return;
+    }
+
+    hideError();
+    document.getElementById("results").style.display = "block";
+
+    // Age stats
+    document.getElementById("out_years").innerText = age.years;
+    document.getElementById("out_months").innerText = age.months;
+    document.getElementById("out_days").innerText = age.days;
+
+    // Total days alive
+    const dob = new Date(dateOfBirthString);
+    const today = new Date();
+    const totalDays = Math.floor((today - dob) / (1000 * 60 * 60 * 24));
+    document.getElementById("out_total_days").innerText =
+      totalDays.toLocaleString();
+
+    // Day of week
+    document.getElementById("out_day_of_week").innerText =
+      getDayOfWeek(dateOfBirthString);
+
+    // Time until next birthday
+    const next = timeUntilNext(dateOfBirthString);
+    if (next.months === 0 && next.days === 0) {
+      document.getElementById("out_time_until").innerText = "Today! 🎉";
+    } else {
+      document.getElementById("out_time_until").innerText =
+        next.months + " months, " + next.days + " days";
+    }
+
+    // Personal message
+    document.getElementById("out_personal_msg").innerText =
+      personalBirthdayMsg(age.years);
+
+    // Birthday wish if today
+    const wish = todayBirthdayWish(dateOfBirthString);
+    if (wish) {
+      document.getElementById("birthday_card").style.display = "block";
+      document.getElementById("out_wish").innerText = wish;
+    } else {
+      document.getElementById("birthday_card").style.display = "none";
+    }
+  }
+
+  function showError(msg) {
+    const err = document.getElementById("error");
+    err.style.display = "block";
+    err.innerHTML = `<div class="error-box">${msg}</div>`;
+    document.getElementById("results").style.display = "none";
+  }
+
+  function hideError() {
+    document.getElementById("error").style.display = "none";
+  }
+
+  // --- Your logic functions below ---
+
+  function getDayOfWeek(dateOfBirthString) {
+    let week = ['Sunday','Monday','Tuesday','Wednesday',
+                'Thursday','Friday','Saturday'];
+    let dateOfBirth = new Date(dateOfBirthString);
+    return week[dateOfBirth.getDay()];
+  }
+
+  function calculateAge(dateOfBirthString) {
+    let dob = new Date(dateOfBirthString);
+    let today = new Date();
+    dob.setHours(0,0,0,0);
+    today.setHours(0,0,0,0);
+    if (dob.getTime() > today.getTime()) return null;
+    let years = today.getFullYear() - dob.getFullYear();
+    let months = today.getMonth() - dob.getMonth();
+    let days = today.getDate() - dob.getDate();
+    if (days < 0) {
+      months--;
+      let prevMonth = new Date(today.getFullYear(), today.getMonth(), 0);
+      days += prevMonth.getDate();
+    }
+    if (months < 0) { years--; months += 12; }
+    return { years, months, days };
+  }
+
+  function todayBirthdayWish(dateOfBirthString) {
+    let dob = new Date(dateOfBirthString);
+    let today = new Date();
+    return (dob.getMonth() === today.getMonth() &&
+            dob.getDate() === today.getDate())
+            ? "🎉 Happy Birthday! 🎂 Wishing you an amazing day!" : null;
+  }
+
+  function timeUntilNext(dateOfBirthString) {
+    let dob = new Date(dateOfBirthString);
+    let today = new Date();
+    let months = dob.getMonth() - today.getMonth();
+    let days = dob.getDate() - today.getDate();
+    if (days < 0) {
+      months--;
+      days = new Date(today.getFullYear(), today.getMonth()+1, 0)
+             .getDate() - today.getDate() + dob.getDate();
+    }
+    if (months < 0) months += 12;
+    return { months, days };
+  }
+
+  function personalBirthdayMsg(age) {
+    switch (age) {
+      case 0: return "Welcome to the world little one!";
+      case 13: return "Happy 13th birthday! You are officially a teenager now. May your Wi-Fi be fast and your curfew negotiable!";
+      case 16: return "Happy Sweet 16! You're finally at the age where everything feels possible. Enjoy the driver's seat of your own journey!";
+      case 17: return "Happy birthday! You are almost an adult now!";
+      case 18: return "Congratulations on turning 18! You're now old enough to make serious decisions and young enough to recover from the questionable ones.";
+      case 19: return "Happy 19th birthday! You are officially enjoying your last year of being a teenager. Make every single second count!";
+      case 20: return "Cheers to leaving the teens behind! Welcome to your twenties — the decade of figuring it out and having a blast doing so.";
+      case 21: return "Happy 21st birthday! The world is officially your oyster. Here's to a big day and an even bigger year ahead!";
+      case 30: return "Happy 30th birthday! No matter how old we get, thank goodness I'll still be younger than you.";
+      case 40: return "Happy 40th birthday! You've survived every awkward phase and came out completely iconic. Cheers to your best chapter yet!";
+      case 50: return "Happy 50th! They say the first fifty are the hardest. From here on out, it's all confidence and comfortable shoes.";
+      case 60: return "Sixty looks absolutely incredible on you. Wishing you a beautiful year ahead filled with the people and hobbies you love most.";
+    }
+    if (age > 0 && age <= 12) return "Happy birthday kid!";
+    if (age >= 14 && age <= 15) return "Happy birthday you almost teen!";
+    if (age >= 22 && age <= 29) return "Happy Birthday! You are officially at the age where a night of heavy drinking requires a three-business-day recovery window.";
+    if (age >= 31 && age <= 39) return "Happy Birthday! Welcome to the age where you have a favorite grocery store, a favorite burner on the stove, and a bedtime you actually respect.";
+    if (age >= 41 && age <= 49) return "Happy Birthday! You've officially reached the age where 'let me check my calendar' actually means 'I need to see if I have the social energy for that'.";
+    if (age >= 51 && age <= 59) return "Happy Birthday! You've officially reached the age where 'doing physical activity' just means successfully getting off the couch without making a sound.";
+    if (age >= 61 && age <= 69) return "Happy Birthday! You've officially reached the age where 'speed dial' is exclusively used for your doctor, your kids, and your favorite restaurant.";
+    if (age >= 70 && age <= 80) return "Happy birthday! Your stories have shaped our family, and your kindness still guides me today. Thank you for being such a bright light.";
+    if (age >= 81 && age <= 89) return "Happy Birthday! You've officially reached the age where your secrets are totally safe with your friends — mostly because everyone forgets them anyway!";
+    if (age >= 90 && age <= 100) return "To a beautiful milestone birthday. May today be filled with the warmest memories, deepest comfort, and all the love you so richly deserve.";
+    return "You are still alive! Congratulations! PS — Are we sure you are not a zombie?";
+  }
+</script>
+</body>
+</html>
